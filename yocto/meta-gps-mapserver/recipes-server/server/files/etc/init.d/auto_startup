@@ -1,0 +1,15 @@
+#!/bin/sh
+
+INSTALL_LIBS=/gps/myapp/install_python_libs.py
+FLASK_APP=/gps/myapp/flask_server/app.py
+GPS_DAEMON=/gps/myapp/gps-daemon.py
+FLASK_ENV=production
+HOST=0.0.0.0
+PORT=80
+date 020200002025.00
+rdate -s time.bora.net
+python3 $INSTALL_LIBS
+python3 $GPS_DAEMON &
+python3 $FLASK_APP &
+exit 0
+

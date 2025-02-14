@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #4CAF50;
+            margin: 20px 0;
+        }
+
+        #map {
+            height: 600px;
+            width: 100%;
+            max-width: 1000px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .info-box {
+            background-color: #fff;
+            padding: 15px;
+            margin: 10px 0;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        #gps-info, #utc-info {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .refresh-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        .refresh-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>GPS Tracker</h1>
+    <div id="map"></div>
+    <div class="info-container">
+        <div class="info-box" id="gps-info">Loading GPS data...</div>
+        <div class="info-box" id="utc-info">Loading time...</div>
+    </div>
+    <script>
+        const map = L.map('map').setView([0, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        const marker = L.marker([0, 0]).addTo(map);
+
+        async function fetchGPSData() {
+            try {
+                const response = await fetch('/gps');
+                if (!response.ok) {
+                    console.error('Failed to fetch GPS data:', response.statusText);
+                    return;
+                }
+                const data = await response.json();
+                const latitude = data.latitude || 'Unknown';
+                const longitude = data.longitude || 'Unknown';
+
+                if (latitude !== 'Unknown' && longitude !== 'Unknown') {
+                    marker.setLatLng([latitude, longitude]);
+                    map.setView([latitude, longitude], 10);
+                }
+
+                document.getElementById('gps-info').innerText = 
+                    `Latitude: ${latitude.toFixed(5)}, Longitude: ${longitude.toFixed(5)}`;
+            } catch (error) {
+                console.error('Error fetching GPS data:', error);
+            }
+        }
+
+        async function fetchUTCData() {
+            try {
+                const response = await fetch('/utc');
+                if (!response.ok) {
+                    console.error('Failed to fetch UTC data:', response.statusText);
+                    return;
+                }
+                const data = await response.json();
+                const time_utc = data.time_utc || 'Unknown';
+                document.getElementById('utc-info').innerText = `GPS Time: ${time_utc}`;
+            } catch (error) {
+                console.error('Error fetching UTC data:', error);
+            }
+        }
+
+        setInterval(() => {
+            fetchGPSData();
+            fetchUTCData();
+        }, 4000); 
+    </script>
+</body>
+</html>
+
