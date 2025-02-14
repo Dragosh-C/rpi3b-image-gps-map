@@ -1,4 +1,4 @@
-**Embedded System Implementation of a gps Web Server on RPi **  
+** Embedded System Implementation of a gps Web Server on RPi **  
 ---
 
 ### Overview  
